@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>500人平价餐秀场地 — 成本分析与利润测算报告</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root { --gold:#c9a44a; --gold-light:#e8d48b; --cyan:#38bdf8; --bg-deep:#0a0e1a; --bg-card:rgba(15,22,42,0.85); --bg-card-border:rgba(201,164,74,0.15); }
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter','Noto Serif SC',sans-serif; background:var(--bg-deep); }
+h1,h2,h3,.serif { font-family:'Noto Serif SC',serif; }
+.mono { font-family:'JetBrains Mono',monospace; }
+body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.03; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+.glow-card { background:var(--bg-card); border:1px solid var(--bg-card-border); border-radius:12px; backdrop-filter:blur(12px); position:relative; overflow:hidden; transition:border-color 0.3s,box-shadow 0.3s; }
+.glow-card:hover { border-color:rgba(201,164,74,0.3); box-shadow:0 0 30px rgba(201,164,74,0.06); }
+.glow-card::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle at 30% 30%,rgba(201,164,74,0.03) 0%,transparent 60%); pointer-events:none; }
+.section-title { font-weight:700; color:#fff; background:linear-gradient(135deg,#fff 0%,var(--gold-light) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.kpi-gold { background:linear-gradient(135deg,var(--gold) 0%,var(--gold-light) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.gold-line { height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:0.2; }
+input[type=range] { -webkit-appearance:none; appearance:none; width:100%; height:5px; background:rgba(255,255,255,0.08); border-radius:3px; outline:none; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--gold); cursor:pointer; box-shadow:0 0 10px rgba(201,164,74,0.5); }
+input[type=range]::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:var(--gold); cursor:pointer; border:none; box-shadow:0 0 10px rgba(201,164,74,0.5); }
+.nav-tab.active { background:rgba(201,164,74,0.15); color:#fff !important; }
+::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:var(--bg-deep); } ::-webkit-scrollbar-thumb { background:rgba(201,164,74,0.25); border-radius:3px; }
+@media (max-width:768px) { .section-title { font-size:1.2rem !important; } }
+</style>
+</head>
+<body class="bg-[#0a0e1a] text-gray-200 antialiased">
+
+<!-- Top Nav -->
+<nav id="topNav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style="background:rgba(10,14,26,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,164,74,0.08)">
+  <div class="max-w-7xl mx-auto flex items-center justify-between px-4 h-12">
+    <span class="serif text-sm text-white/70 font-bold">500人平价餐秀 · 成本分析报告</span>
+    <div class="flex gap-1 text-xs">
+      <a href="#page1" class="nav-tab px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition-colors" data-page="1">成本分析</a>
+      <a href="#page2" class="nav-tab px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition-colors" data-page="2">收入测算</a>
+      <a href="#page3" class="nav-tab px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition-colors" data-page="3">利润分析</a>
+      <a href="#page4" class="nav-tab px-3 py-1.5 rounded-md text-gray-400 hover:text-white transition-colors" data-page="4">动态测算</a>
+    </div>
+  </div>
+  <div id="progressBar" class="h-[2px]" style="background:linear-gradient(90deg,#c9a44a,#38bdf8);width:0%;transition:width 0.1s"></div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- PAGE 1: COST ANALYSIS -->
+<!-- ============================================================ -->
+<section id="page1" class="page-section pt-16">
+  <!-- Hero compact -->
+  <div class="px-4 pt-10 pb-6 text-center" style="background:linear-gradient(180deg,rgba(201,164,74,0.04) 0%,transparent 100%)">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-xs text-gray-500 tracking-[0.3em] mb-3 mono">COST ANALYSIS REPORT</div>
+      <h1 class="serif text-3xl md:text-5xl font-black mb-4" style="background:linear-gradient(135deg,#fff 0%,#e8d48b 50%,#38bdf8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">500人平价餐秀场地<br>成本分析与利润测算报告</h1>
+      <p class="text-gray-500 text-sm max-w-2xl mx-auto mb-6">6,000㎡空地 · 500人/场双场运营 · 人均消费260—300元 · 全面成本与利润数据支撑</p>
+      <!-- Mini KPI row -->
+      <div class="flex flex-wrap justify-center gap-3 md:gap-6">
+        <div class="glow-card px-4 py-2.5 text-center"><div class="mono text-lg text-white font-bold">9,100<span class="text-xs text-gray-500 ml-0.5">万</span></div><div class="text-[10px] text-gray-500">总投资</div></div>
+        <div class="glow-card px-4 py-2.5 text-center"><div class="mono text-lg text-white font-bold">5,933<span class="text-xs text-gray-500 ml-0.5">万</span></div><div class="text-[10px] text-gray-500">年收入</div></div>
+        <div class="glow-card px-4 py-2.5 text-center"><div class="mono text-lg text-white font-bold">1,267<span class="text-xs text-gray-500 ml-0.5">万</span></div><div class="text-[10px] text-gray-500">净利润</div></div>
+        <div class="glow-card px-4 py-2.5 text-center"><div class="mono text-lg text-white font-bold">13.9<span class="text-xs text-gray-500 ml-0.5">%</span></div><div class="text-[10px] text-gray-500">ROI</div></div>
+        <div class="glow-card px-4 py-2.5 text-center"><div class="mono text-lg text-white font-bold">7.18<span class="text-xs text-gray-500 ml-0.5">年</span></div><div class="text-[10px] text-gray-500">回收周期</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gold-line mx-4 my-2"></div>
+
+  <!-- Pre-investment -->
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-baseline gap-3 mb-4">
+      <h2 class="section-title text-xl">一、前期成本分析</h2>
+      <span class="text-gray-500 text-xs">一次性投入合计 <span class="mono text-white font-semibold">9,100万元</span></span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- Pie -->
+      <div class="glow-card p-4 lg:col-span-5">
+        <div class="text-white text-sm font-semibold mb-1 serif">成本构成占比</div>
+        <div id="chartPrePie" style="width:100%;height:280px"></div>
+      </div>
+      <!-- Bar -->
+      <div class="glow-card p-4 lg:col-span-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">建筑成本区间影响</div>
+        <div id="chartPreBar" style="width:100%;height:280px"></div>
+      </div>
+      <!-- Table -->
+      <div class="glow-card p-4 lg:col-span-3 overflow-x-auto text-xs">
+        <div class="text-white text-sm font-semibold mb-2 serif">前期明细</div>
+        <table class="w-full"><tbody class="mono">
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">建筑成本</td><td class="text-right text-amber-300">6,500万</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">设备成本</td><td class="text-right text-amber-300">1,200万</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">编创内容</td><td class="text-right text-amber-300">700万</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">餐具厨房</td><td class="text-right text-amber-300">700万</td></tr>
+          <tr class="border-t border-amber-400/30 font-bold"><td class="py-1.5 text-white">合计</td><td class="text-right text-amber-300">9,100万</td></tr>
+        </tbody></table>
+        <div class="mt-3 text-gray-500 text-[10px] leading-relaxed">
+          建筑成本占71.4%，是前期成本控制的关键环节。区间6,000—7,000万浮动，本次按中间值6,500万测算。
+        </div>
+      </div>
+    </div>
+
+    <!-- 详细测算依据 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white font-semibold mb-2 serif text-sm">建筑成本测算依据</div>
+        <div class="space-y-1.5 text-gray-400 leading-relaxed" style="font-size:10px">
+          <p>现有运营餐秀数据：<span class="text-white mono">187人</span>餐位配套 <span class="text-white mono">2,200㎡</span></p>
+          <p>推算单餐位面积：<span class="text-cyan-300 mono">2200 &divide; 187 &asymp; 11.7㎡/位</span></p>
+          <p>500人需配套面积：<span class="text-cyan-300 mono">500 &times; 11.7 = 5,850㎡</span></p>
+          <p>现有空地 <span class="text-white mono">6,000㎡</span>，匹配（余150㎡辅助配套）</p>
+          <p class="pt-1 border-t border-white/5">建筑总投入区间：<span class="text-amber-300 mono">6,000—7,000万</span></p>
+          <p>含基础施工、材料采购、施工管理及不可预见费，按中间值 <span class="text-amber-300 mono font-bold">6,500万</span> 核算</p>
+        </div>
+      </div>
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white font-semibold mb-2 serif text-sm">设备成本测算依据</div>
+        <div class="space-y-1.5 text-gray-400 leading-relaxed" style="font-size:10px">
+          <p>现有运营餐秀设备费用：<span class="text-white mono">600万</span></p>
+          <p>现有场地面积：<span class="text-white mono">2,200㎡</span></p>
+          <p>新建场地面积：<span class="text-white mono">5,850㎡</span>（超1倍）</p>
+          <p>设备规模按现有翻倍：<span class="text-cyan-300 mono">600 &times; 2 = 1,200万</span></p>
+          <p class="pt-1 border-t border-white/5">涵盖：演出机械设备、灯光音响系统、多媒体播放系统等核心设备采购安装</p>
+        </div>
+      </div>
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white font-semibold mb-2 serif text-sm">编创内容测算依据</div>
+        <div class="space-y-1.5 text-gray-400 leading-relaxed" style="font-size:10px">
+          <p>方案：重新设计新剧目（现有宋宴保持不变）</p>
+          <p>直接费用预估：<span class="text-amber-300 mono font-bold">700万</span></p>
+          <p class="pt-1 border-t border-white/5">涵盖项目：</p>
+          <p>&bull; 编创费（剧本/导演/编排）</p>
+          <p>&bull; 服装制作费</p>
+          <p>&bull; 多媒体内容制作费</p>
+          <p>&bull; 音乐创作及版权费</p>
+          <p class="text-gray-500">若沿用现有剧目可适当降低</p>
+        </div>
+      </div>
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white font-semibold mb-2 serif text-sm">餐具厨房测算依据</div>
+        <div class="space-y-1.5 text-gray-400 leading-relaxed" style="font-size:10px">
+          <p>双场运营需配备 <span class="text-white mono">2套</span> 餐具</p>
+          <p>餐具标准：<span class="text-white mono">4,000元/位</span></p>
+          <p>餐具费用：<span class="text-cyan-300 mono">500 &times; 4000 &times; 2 = 400万</span></p>
+          <p>厨房设备（按现有规模推算）：<span class="text-cyan-300 mono">300万</span></p>
+          <p class="pt-1 border-t border-white/5">厨房涵盖：加工设备、冷藏冷冻、排烟通风等全部设施</p>
+          <p>合计：<span class="text-amber-300 mono font-bold">400 + 300 = 700万</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gold-line mx-4 my-1"></div>
+
+  <!-- Operating Cost -->
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    <div class="flex items-baseline gap-3 mb-4">
+      <h2 class="section-title text-xl">二、运营成本分析</h2>
+      <span class="text-gray-500 text-xs">年度总成本 <span class="mono text-white font-semibold">4,080.84万元</span> = 固定2,437.8万 + 变动1,643.04万</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- Fixed vs Variable -->
+      <div class="glow-card p-4 lg:col-span-3">
+        <div class="text-white text-sm font-semibold mb-1 serif">固定 vs 变动</div>
+        <div id="chartOpSplit" style="width:100%;height:230px"></div>
+      </div>
+      <!-- Labor breakdown -->
+      <div class="glow-card p-4 lg:col-span-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">用工成本细分 <span class="text-gray-500 text-xs font-normal">（占固定成本93.1%）</span></div>
+        <div id="chartLabor" style="width:100%;height:230px"></div>
+      </div>
+      <!-- Waterfall -->
+      <div class="glow-card p-4 lg:col-span-5">
+        <div class="text-white text-sm font-semibold mb-1 serif">月度成本瀑布图</div>
+        <div id="chartWaterfall" style="width:100%;height:230px"></div>
+      </div>
+    </div>
+    <!-- Operating detail table -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white text-sm font-semibold mb-2 serif">固定运营成本明细 <span class="mono text-amber-300 text-xs font-normal">2,437.8万/年</span></div>
+        <table class="w-full"><thead><tr class="border-b border-white/10 text-gray-500"><th class="text-left py-1 font-normal">项目</th><th class="text-right py-1 font-normal">月度(万)</th><th class="text-right py-1 font-normal">年度(万)</th><th class="text-right py-1 font-normal">占比</th></tr></thead>
+        <tbody class="mono">
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">演出团队</td><td class="text-right text-white">72.00</td><td class="text-right text-white">864.00</td><td class="text-right text-gray-400">35.4%</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">服务/清洁等</td><td class="text-right text-white">80.75</td><td class="text-right text-white">969.00</td><td class="text-right text-gray-400">39.7%</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">厨房人员</td><td class="text-right text-white">25.00</td><td class="text-right text-white">300.00</td><td class="text-right text-gray-400">12.3%</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">管理人员</td><td class="text-right text-white">6.00</td><td class="text-right text-white">72.00</td><td class="text-right text-gray-400">3.0%</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">保安/保洁</td><td class="text-right text-white">6.40</td><td class="text-right text-white">76.80</td><td class="text-right text-gray-400">3.2%</td></tr>
+          <tr class="border-b border-white/8"><td class="py-1 text-gray-300 font-semibold">用工小计</td><td class="text-right text-amber-300 font-semibold">189.15</td><td class="text-right text-amber-300 font-semibold">2,269.80</td><td class="text-right text-amber-300 font-semibold">93.1%</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">能源电费</td><td class="text-right text-white">10.00</td><td class="text-right text-white">120.00</td><td class="text-right text-gray-400">4.9%</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">其他物耗</td><td class="text-right text-white">4.00</td><td class="text-right text-white">48.00</td><td class="text-right text-gray-400">2.0%</td></tr>
+          <tr class="border-t border-amber-400/30 font-bold"><td class="py-1.5 text-white">固定合计</td><td class="text-right text-amber-300">203.15</td><td class="text-right text-amber-300">2,437.80</td><td class="text-right text-white">100%</td></tr>
+        </tbody></table>
+      </div>
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white text-sm font-semibold mb-2 serif">变动运营成本明细 <span class="mono text-cyan-300 text-xs font-normal">72元/人</span></div>
+        <table class="w-full"><thead><tr class="border-b border-white/10 text-gray-500"><th class="text-left py-1 font-normal">项目</th><th class="text-right py-1 font-normal">单价(元/人)</th><th class="text-right py-1 font-normal">年度总额(万)</th><th class="text-right py-1 font-normal">说明</th></tr></thead>
+        <tbody class="mono">
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">原材料</td><td class="text-right text-white">60</td><td class="text-right text-white">1,369.20</td><td class="text-right text-gray-500 text-[10px]" style="font-family:Inter">食材采购</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">消耗品</td><td class="text-right text-white">12</td><td class="text-right text-white">273.84</td><td class="text-right text-gray-500 text-[10px]" style="font-family:Inter">纸巾/餐具损耗/清洁</td></tr>
+          <tr class="border-t border-cyan-400/30 font-bold"><td class="py-1.5 text-white">变动合计</td><td class="text-right text-cyan-300">72</td><td class="text-right text-cyan-300">1,643.04</td><td class="text-right text-gray-500 text-[10px]" style="font-family:Inter">228,200人 x 72元</td></tr>
+        </tbody></table>
+        <div class="mt-4 p-3 rounded-lg" style="background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.1)">
+          <div class="text-white font-semibold mb-1" style="font-family:Inter">成本结构要点</div>
+          <ul class="text-gray-400 space-y-1 leading-relaxed" style="font-family:Inter;font-size:10px">
+            <li>&#x2022; 用工成本占固定运营成本 <span class="text-amber-300 font-bold">93.1%</span>，是运营成本控制核心</li>
+            <li>&#x2022; 变动成本与接待人数直接挂钩，提升上座率会同步增加变动支出</li>
+            <li>&#x2022; 人均耗材72元中原材料占83.3%，可通过供应商长期合作降低</li>
+            <li>&#x2022; 能源电费为固定支出(10万/月)，不受客流波动影响</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PAGE 2: REVENUE ANALYSIS -->
+<!-- ============================================================ -->
+<section id="page2" class="page-section">
+  <div class="gold-line mx-4"></div>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-baseline gap-3 mb-2">
+      <h2 class="section-title text-2xl">三、收入结构分析</h2>
+      <span class="text-gray-500 text-xs">全年总收入 <span class="mono text-white font-semibold">5,933.2万元</span> · 接待 <span class="mono text-white font-semibold">228,200</span> 人</span>
+    </div>
+    <p class="text-gray-500 text-xs mb-5">人均消费260元（保守测算），全年365天按三时段分别测算，每日双场运营，最大日接待1,000人</p>
+
+    <!-- 3 time period cards + charts -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+      <div class="glow-card p-4">
+        <div class="flex items-center gap-2 mb-2"><div class="w-2.5 h-2.5 rounded-full" style="background:#c9a44a"></div><span class="text-white font-semibold serif text-sm">节假日</span><span class="mono text-xs text-gray-500">33天</span></div>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <div><span class="text-gray-500">上座率</span></div><div class="text-right"><span class="mono text-white">140%（超满）</span></div>
+          <div><span class="text-gray-500">日接待</span></div><div class="text-right"><span class="mono text-white">1,400人</span></div>
+          <div><span class="text-gray-500">日收入</span></div><div class="text-right"><span class="mono text-amber-300">36.4万</span></div>
+          <div><span class="text-gray-500">时段总收入</span></div><div class="text-right"><span class="mono text-amber-300 font-bold">1,201.2万</span></div>
+          <div><span class="text-gray-500">收入占比</span></div><div class="text-right"><span class="mono text-amber-300">20.2%</span></div>
+        </div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="flex items-center gap-2 mb-2"><div class="w-2.5 h-2.5 rounded-full" style="background:#38bdf8"></div><span class="text-white font-semibold serif text-sm">非节假日旺季</span><span class="mono text-xs text-gray-500">40天</span></div>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <div><span class="text-gray-500">上座率</span></div><div class="text-right"><span class="mono text-white">90%</span></div>
+          <div><span class="text-gray-500">日接待</span></div><div class="text-right"><span class="mono text-white">900人</span></div>
+          <div><span class="text-gray-500">日收入</span></div><div class="text-right"><span class="mono text-cyan-300">23.4万</span></div>
+          <div><span class="text-gray-500">时段总收入</span></div><div class="text-right"><span class="mono text-cyan-300 font-bold">936.0万</span></div>
+          <div><span class="text-gray-500">收入占比</span></div><div class="text-right"><span class="mono text-cyan-300">15.8%</span></div>
+        </div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="flex items-center gap-2 mb-2"><div class="w-2.5 h-2.5 rounded-full" style="background:#64748b"></div><span class="text-white font-semibold serif text-sm">其余时间（平季）</span><span class="mono text-xs text-gray-500">292天</span></div>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+          <div><span class="text-gray-500">上座率</span></div><div class="text-right"><span class="mono text-white">50%</span></div>
+          <div><span class="text-gray-500">日接待</span></div><div class="text-right"><span class="mono text-white">500人</span></div>
+          <div><span class="text-gray-500">日收入</span></div><div class="text-right"><span class="mono text-gray-300">13.0万</span></div>
+          <div><span class="text-gray-500">时段总收入</span></div><div class="text-right"><span class="mono text-gray-300 font-bold">3,796.0万</span></div>
+          <div><span class="text-gray-500">收入占比</span></div><div class="text-right"><span class="mono text-white font-bold">64.0%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">三时段收入占比</div>
+        <div id="chartRevPie" style="width:100%;height:300px"></div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">日均收入 vs 日均接待量</div>
+        <div id="chartRevBar" style="width:100%;height:300px"></div>
+      </div>
+    </div>
+
+    <!-- Revenue insight -->
+    <div class="glow-card p-4" style="border-color:rgba(56,189,248,0.2);background:linear-gradient(135deg,rgba(56,189,248,0.04),transparent)">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div>
+          <div class="text-white font-semibold mb-1 serif text-sm">收入弹性</div>
+          <p class="text-gray-400 leading-relaxed">人均消费从260元提升至300元，全年总收入可达 <span class="mono text-cyan-300 font-bold">6,846万元</span>，增加 <span class="mono text-cyan-300">912.8万</span>，增幅15.4%。</p>
+        </div>
+        <div>
+          <div class="text-white font-semibold mb-1 serif text-sm">核心发现</div>
+          <p class="text-gray-400 leading-relaxed">平季292天贡献64%收入，是收入的绝对核心。提升该时段上座率（当前仅50%）是增收的最高效路径。</p>
+        </div>
+        <div>
+          <div class="text-white font-semibold mb-1 serif text-sm">接待量构成</div>
+          <p class="text-gray-400 leading-relaxed">节假日46,200人(20.2%) + 旺季36,000人(15.8%) + 平季146,000人(64.0%) = 全年228,200人。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PAGE 3: PROFIT ANALYSIS -->
+<!-- ============================================================ -->
+<section id="page3" class="page-section">
+  <div class="gold-line mx-4"></div>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-baseline gap-3 mb-2">
+      <h2 class="section-title text-2xl">四、利润分析</h2>
+      <span class="text-gray-500 text-xs">年度净利润 <span class="mono text-white font-semibold">1,267.36万元</span> · ROI <span class="mono text-white font-semibold">13.93%</span></span>
+    </div>
+    <p class="text-gray-500 text-xs mb-5">前期成本按固定资产折旧规范分年摊销（建筑20年 / 设备等10年），确保利润测算符合财务规范</p>
+
+    <!-- Profit KPIs -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-5">
+      <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">年度总收入</div><div class="mono text-base font-bold text-white">5,933.2<span class="text-xs text-gray-500">万</span></div></div>
+      <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">运营总成本</div><div class="mono text-base font-bold text-red-400">4,080.84<span class="text-xs text-gray-500">万</span></div></div>
+      <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">年度毛利润</div><div class="mono text-base font-bold text-green-400">1,852.36<span class="text-xs text-gray-500">万</span></div></div>
+      <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">年度摊销</div><div class="mono text-base font-bold text-purple-400">585.0<span class="text-xs text-gray-500">万</span></div></div>
+      <div class="glow-card p-3 text-center" style="border-color:rgba(201,164,74,0.3)"><div class="text-[10px] text-gray-500 mb-1">年度净利润</div><div class="mono text-base font-bold kpi-gold">1,267.36<span class="text-xs text-gray-500">万</span></div></div>
+      <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">毛利率 / 净利率</div><div class="mono text-base font-bold text-white">31.2% <span class="text-xs text-gray-500">/</span> 21.4%</div></div>
+    </div>
+
+    <!-- Profit breakdown + Scenario -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">利润构成瀑布</div>
+        <div id="chartProfitWaterfall" style="width:100%;height:300px"></div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">不同场景净利润对比</div>
+        <div id="chartScenario" style="width:100%;height:300px"></div>
+      </div>
+    </div>
+
+    <!-- Depreciation & scenario detail tables -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white text-sm font-semibold mb-2 serif">前期成本摊销明细 <span class="mono text-purple-300 text-xs font-normal">585万/年</span></div>
+        <table class="w-full"><thead><tr class="border-b border-white/10 text-gray-500"><th class="text-left py-1 font-normal">项目</th><th class="text-right py-1 font-normal">原值(万)</th><th class="text-right py-1 font-normal">摊销年限</th><th class="text-right py-1 font-normal">年摊销(万)</th></tr></thead>
+        <tbody class="mono">
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">建筑成本</td><td class="text-right text-white">6,500</td><td class="text-right text-gray-400">20年</td><td class="text-right text-purple-300">325</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">设备成本</td><td class="text-right text-white">1,200</td><td class="text-right text-gray-400">10年</td><td class="text-right text-purple-300">120</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">编创内容</td><td class="text-right text-white">700</td><td class="text-right text-gray-400">10年</td><td class="text-right text-purple-300">70</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1 text-gray-300">餐具厨房</td><td class="text-right text-white">700</td><td class="text-right text-gray-400">10年</td><td class="text-right text-purple-300">70</td></tr>
+          <tr class="border-t border-purple-400/30 font-bold"><td class="py-1.5 text-white">合计</td><td class="text-right text-white">9,100</td><td class="text-right text-gray-400">—</td><td class="text-right text-purple-300">585</td></tr>
+        </tbody></table>
+      </div>
+      <div class="glow-card p-4 text-xs">
+        <div class="text-white text-sm font-semibold mb-2 serif">场景浮动分析</div>
+        <table class="w-full"><thead><tr class="border-b border-white/10 text-gray-500"><th class="text-left py-1 font-normal">场景</th><th class="text-right py-1 font-normal">前期投入</th><th class="text-right py-1 font-normal">年摊销</th><th class="text-right py-1 font-normal">净利润</th><th class="text-right py-1 font-normal">回收周期</th></tr></thead>
+        <tbody class="mono">
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">建筑6,000万</td><td class="text-right text-white">8,600</td><td class="text-right text-white">560</td><td class="text-right text-green-400">1,292.36</td><td class="text-right text-cyan-300">6.66年</td></tr>
+          <tr class="border-b border-white/5" style="background:rgba(201,164,74,0.05)"><td class="py-1.5 text-amber-300 font-semibold">建筑6,500万(基准)</td><td class="text-right text-white">9,100</td><td class="text-right text-white">585</td><td class="text-right text-green-400 font-semibold">1,267.36</td><td class="text-right text-cyan-300">7.18年</td></tr>
+          <tr class="border-b border-white/5"><td class="py-1.5 text-gray-300">建筑7,000万</td><td class="text-right text-white">9,600</td><td class="text-right text-white">610</td><td class="text-right text-green-400">1,242.36</td><td class="text-right text-cyan-300">7.73年</td></tr>
+          <tr><td class="py-1.5 text-cyan-300 font-semibold">均价300元</td><td class="text-right text-white">9,100</td><td class="text-right text-white">585</td><td class="text-right text-green-400 font-semibold">2,180.16</td><td class="text-right text-cyan-300 font-semibold">4.17年</td></tr>
+        </tbody></table>
+        <div class="mt-3 p-2.5 rounded-lg" style="background:rgba(201,164,74,0.05);border:1px solid rgba(201,164,74,0.12)">
+          <p class="text-gray-400 leading-relaxed text-[10px]">均价从260提升至300元，净利润增幅达 <span class="text-amber-300 font-bold">72%</span>，回收周期缩短 <span class="text-amber-300 font-bold">3年</span>，是利润弹性最大的变量。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PAGE 4: DRIVERS & INTERACTIVE CALCULATOR -->
+<!-- ============================================================ -->
+<section id="page4" class="page-section">
+  <div class="gold-line mx-4"></div>
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-baseline gap-3 mb-2">
+      <h2 class="section-title text-2xl">五、利润驱动因子与动态测算</h2>
+    </div>
+    <p class="text-gray-500 text-xs mb-5">识别核心利润驱动因子，通过交互式计算器实时测算不同参数组合下的利润表现</p>
+
+    <!-- Key insight -->
+    <div class="glow-card p-4 mb-5" style="border-color:rgba(201,164,74,0.25);background:linear-gradient(135deg,rgba(201,164,74,0.05),transparent)">
+      <div class="flex gap-3 items-start">
+        <div class="text-2xl mt-0.5" style="color:#c9a44a">&#9733;</div>
+        <div class="text-xs">
+          <div class="text-white font-bold serif text-sm mb-1">核心发现：两大利润驱动因子</div>
+          <p class="text-gray-400 leading-relaxed"><strong class="text-amber-300">平季上座率</strong>每提升10个百分点，净利润增加约549万元（+43%）；<strong class="text-cyan-300">人均消费均价</strong>每提升10%（26元），净利润增加约593万元（+47%）。用工成本优化与耗材降本的边际贡献相对有限，分别为+227万和+164万。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 driver charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">均价敏感度（240—320元）</div>
+        <div id="chartPriceSens" style="width:100%;height:270px"></div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">平季上座率敏感度（30%—80%）</div>
+        <div id="chartOccSens" style="width:100%;height:270px"></div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">用工成本优化影响</div>
+        <div id="chartLaborOpt" style="width:100%;height:270px"></div>
+      </div>
+      <div class="glow-card p-4">
+        <div class="text-white text-sm font-semibold mb-1 serif">利润贡献因子排名（各+10%）</div>
+        <div id="chartFactorRank" style="width:100%;height:270px"></div>
+      </div>
+    </div>
+
+    <div class="gold-line my-5"></div>
+
+    <!-- INTERACTIVE CALCULATOR -->
+    <div class="mb-3">
+      <h3 class="section-title text-xl">交互式利润测算计算器</h3>
+      <p class="text-gray-500 text-xs mt-1">拖动滑块调整参数，实时查看收入、成本与利润变化</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <!-- Sliders -->
+      <div class="lg:col-span-5 space-y-4">
+        <div class="glow-card p-4 space-y-4">
+          <div class="text-white font-semibold serif text-sm mb-1">收入参数</div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">人均消费均价</span><span class="mono text-amber-300 font-bold" id="valPrice">260元</span></div><input type="range" id="slPrice" min="200" max="400" step="10" value="260" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>200</span><span>400</span></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">平季上座率(292天)</span><span class="mono text-amber-300 font-bold" id="valOcc">50%</span></div><input type="range" id="slOcc" min="20" max="100" step="5" value="50" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>20%</span><span>100%</span></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">节假日日均人数</span><span class="mono text-amber-300 font-bold" id="valHol">1,400人</span></div><input type="range" id="slHol" min="800" max="2000" step="50" value="1400" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>800</span><span>2,000</span></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">旺季上座率(40天)</span><span class="mono text-amber-300 font-bold" id="valPeak">90%</span></div><input type="range" id="slPeak" min="50" max="100" step="5" value="90" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>50%</span><span>100%</span></div></div>
+        </div>
+        <div class="glow-card p-4 space-y-4">
+          <div class="text-white font-semibold serif text-sm mb-1">成本参数</div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">建筑成本(含不可预见费)</span><span class="mono text-amber-300 font-bold" id="valBuild">6,500万</span></div><input type="range" id="slBuild" min="5000" max="8000" step="100" value="6500" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>5,000万</span><span>8,000万</span></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">人均耗材成本</span><span class="mono text-amber-300 font-bold" id="valMat">72元</span></div><input type="range" id="slMat" min="50" max="100" step="1" value="72" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>50</span><span>100</span></div></div>
+          <div><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">月度用工成本</span><span class="mono text-amber-300 font-bold" id="valLabor">189.15万</span></div><input type="range" id="slLabor" min="150" max="250" step="0.05" value="189.15" oninput="calc()"><div class="flex justify-between text-[10px] text-gray-600 mt-0.5"><span>150万</span><span>250万</span></div></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="lg:col-span-7 space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">全年总收入</div><div class="kpi-gold mono text-lg font-bold" id="resRevenue">5,933</div><div class="text-[10px] text-gray-500">万元</div></div>
+          <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">全年总成本</div><div class="mono text-lg font-bold text-red-400" id="resCost">4,666</div><div class="text-[10px] text-gray-500">万元(运营+摊销)</div></div>
+          <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">年度毛利润</div><div class="mono text-lg font-bold text-green-400" id="resGross">1,852</div><div class="text-[10px] text-green-400/60" id="resGrossRate">毛利率 31.2%</div></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="glow-card p-3 text-center" style="border-color:rgba(201,164,74,0.3)"><div class="text-[10px] text-gray-500 mb-1">年度净利润</div><div class="kpi-gold mono text-lg font-bold" id="resNet">1,267</div><div class="text-[10px] text-amber-400/60" id="resNetRate">净利率 21.4%</div></div>
+          <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">投资回报率</div><div class="mono text-lg font-bold text-cyan-400" id="resROI">13.9%</div></div>
+          <div class="glow-card p-3 text-center"><div class="text-[10px] text-gray-500 mb-1">回收周期</div><div class="mono text-lg font-bold text-cyan-400" id="resPayback">7.18</div><div class="text-[10px] text-gray-500">年</div></div>
+        </div>
+        <!-- Mini chart -->
+        <div class="glow-card p-4">
+          <div class="text-white text-sm font-semibold mb-1 serif">利润构成实时图</div>
+          <div id="chartCalcMini" style="width:100%;height:260px"></div>
+        </div>
+        <!-- Diff -->
+        <div class="glow-card p-3">
+          <div class="text-white text-xs font-semibold mb-2 serif">与基准方案对比</div>
+          <div class="grid grid-cols-3 gap-3 text-center text-xs">
+            <div><div class="text-gray-500 text-[10px] mb-0.5">收入变化</div><div class="mono font-bold" id="resDiffRev">+0.0%</div></div>
+            <div><div class="text-gray-500 text-[10px] mb-0.5">净利润变化</div><div class="mono font-bold" id="resDiffNet">+0.0%</div></div>
+            <div><div class="text-gray-500 text-[10px] mb-0.5">回收周期变化</div><div class="mono font-bold" id="resDiffPay">+0.00年</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="text-center py-8 text-gray-600 text-xs mono border-t border-white/5 mt-4">
+  <p>500人平价餐秀场地 · 成本分析与利润测算报告</p>
+  <p class="mt-1 text-gray-700">本报告所有数据基于现有运营餐秀推算，仅供决策参考</p>
+</footer>
+
+<script>
+// ====== GSAP ======
+gsap.registerPlugin(ScrollTrigger);
+gsap.to('#progressBar',{width:'100%',ease:'none',scrollTrigger:{trigger:'body',start:'top top',end:'bottom bottom',scrub:0.3}});
+document.querySelectorAll('.glow-card').forEach(el=>{gsap.from(el,{scrollTrigger:{trigger:el,start:'top 92%',toggleActions:'play none none none'},y:30,opacity:0,duration:0.5,ease:'power2.out'});});
+document.querySelectorAll('.section-title').forEach(el=>{gsap.from(el,{scrollTrigger:{trigger:el,start:'top 94%'},y:20,opacity:0,duration:0.4,ease:'power2.out'});});
+
+// Nav active state
+const navTabs=document.querySelectorAll('.nav-tab');
+document.querySelectorAll('.page-section').forEach(sec=>{
+  ScrollTrigger.create({trigger:sec,start:'top 60%',end:'bottom 40%',onEnter:()=>setActiveNav(sec.id),onEnterBack:()=>setActiveNav(sec.id)});
+});
+function setActiveNav(id){
+  const pg=id.replace('page','');
+  navTabs.forEach(t=>{t.classList.toggle('active',t.dataset.page===pg);});
+}
+
+// ====== ECharts shared ======
+const G='#c9a44a',GL='#e8d48b',C='#38bdf8',S='#64748b',V='#818cf8',P='#f472b6';
+const ax={axisLine:{lineStyle:{color:'rgba(255,255,255,0.08)'}},axisTick:{show:false},axisLabel:{color:'rgba(255,255,255,0.4)',fontFamily:'Inter',fontSize:11},splitLine:{lineStyle:{color:'rgba(255,255,255,0.03)'}}};
+const charts=[];
+function mc(id,opt){const el=document.getElementById(id);if(!el)return null;const c=echarts.init(el,null,{renderer:'svg'});c.setOption(opt);charts.push(c);new IntersectionObserver(([e])=>{if(e.isIntersecting)c.resize();},{threshold:0.1}).observe(el);return c;}
+window.addEventListener('resize',()=>charts.forEach(c=>c.resize()));
+function tip(params){
+  if(!Array.isArray(params))params=[params];
+  let h='<div style="background:rgba(10,14,26,0.95);border:1px solid rgba(201,164,74,0.25);border-radius:8px;padding:10px 14px;font-family:Inter;font-size:12px;color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.4)">';
+  h+='<div style="font-weight:600;margin-bottom:4px;color:#fff">'+params[0].name+'</div>';
+  params.forEach(p=>{const cl=typeof p.color==='string'?p.color:G;h+='<div style="display:flex;justify-content:space-between;gap:16px;margin-top:2px"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:'+cl+'"></span>'+p.seriesName+'</span><span style="font-family:JetBrains Mono;font-weight:600;color:#fff">'+p.value+'</span></div>';});
+  return h+'</div>';
+}
+
+// ====== PAGE 1 CHARTS ======
+// Pre-investment pie
+mc('chartPrePie',{tooltip:{trigger:'item',formatter:p=>'<div style="background:rgba(10,14,26,0.95);border:1px solid rgba(201,164,74,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e2e8f0"><b style="color:#fff">'+p.name+'</b><br/><span style="font-family:JetBrains Mono;font-weight:700;color:'+p.color+'">'+p.value+'万</span> · '+p.percent+'%</div>'},series:[{type:'pie',radius:['42%','70%'],center:['50%','53%'],itemStyle:{borderColor:'#0a0e1a',borderWidth:2,borderRadius:5},label:{color:'rgba(255,255,255,0.6)',fontSize:11,fontFamily:'Inter',formatter:'{b}\n{d}%'},emphasis:{itemStyle:{shadowBlur:15,shadowColor:'rgba(201,164,74,0.25)'}},data:[{value:6500,name:'建筑成本',itemStyle:{color:G}},{value:1200,name:'设备成本',itemStyle:{color:C}},{value:700,name:'编创内容',itemStyle:{color:V}},{value:700,name:'餐具厨房',itemStyle:{color:S}}],animationType:'scale',animationEasing:'elasticOut'}]});
+
+// Pre-investment bar
+mc('chartPreBar',{tooltip:{trigger:'axis',formatter:tip},legend:{top:0,right:0,textStyle:{color:'rgba(255,255,255,0.4)',fontSize:10}},grid:{left:55,right:35,top:30,bottom:30},xAxis:{type:'category',data:['建筑6000万','6500万(基准)','建筑7000万'],...ax},yAxis:[{type:'value',name:'万元',nameTextStyle:{color:'rgba(255,255,255,0.25)',fontSize:10},...ax},{type:'value',name:'年',nameTextStyle:{color:'rgba(255,255,255,0.25)',fontSize:10},max:10,...ax}],series:[{name:'总投资',type:'bar',barWidth:24,yAxisIndex:0,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:G},{offset:1,color:G+'44'}]},borderRadius:[3,3,0,0]},data:[8600,9100,9600]},{name:'净利润',type:'bar',barWidth:24,yAxisIndex:0,itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:C},{offset:1,color:C+'44'}]},borderRadius:[3,3,0,0]},data:[1292,1267,1242]},{name:'回收周期',type:'line',yAxisIndex:1,symbol:'circle',symbolSize:8,lineStyle:{color:P,width:2},itemStyle:{color:P},data:[6.66,7.18,7.73]}]});
+
+// Op split
+mc('chartOpSplit',{tooltip:{trigger:'item',formatter:p=>'<div style="background:rgba(10,14,26,0.95);border:1px solid rgba(201,164,74,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e2e8f0"><b>'+p.name+'</b><br/><span style="font-family:JetBrains Mono;font-weight:700;color:'+p.color+'">'+p.value+'万</span> · '+p.percent+'%</div>'},series:[{type:'pie',radius:['42%','68%'],center:['50%','53%'],itemStyle:{borderColor:'#0a0e1a',borderWidth:2,borderRadius:5},label:{color:'rgba(255,255,255,0.6)',fontSize:11,fontFamily:'Inter',formatter:'{b}\n{c}万\n{d}%'},data:[{value:2437.8,name:'固定运营成本',itemStyle:{color:G}},{value:1643.04,name:'变动运营成本',itemStyle:{color:C}}]}]});
+
+// Labor
+mc('chartLabor',{tooltip:{trigger:'axis',formatter:tip},grid:{left:85,right:15,top:5,bottom:20},xAxis:{type:'value',...ax},yAxis:{type:'category',data:['保安/保洁','管理人员','厨房人员','演出团队','服务/清洁'],...ax,axisLabel:{color:'rgba(255,255,255,0.5)',fontSize:10}},series:[{name:'月度(万)',type:'bar',barWidth:18,itemStyle:{borderRadius:[0,3,3,0],color:p=>[G,C,V,P,S][p.dataIndex]},label:{show:true,position:'right',color:'rgba(255,255,255,0.5)',fontSize:10,fontFamily:'JetBrains Mono',formatter:'{c}万'},data:[80.75,72,25,6,6.4].reverse()}]});
+
+// Waterfall
+(function(){const h=[0,189.15,199.15,209.15,0],m=[189.15,10,10,4,213.15];mc('chartWaterfall',{tooltip:{trigger:'axis',formatter:ps=>{const v=ps.find(p=>p.seriesName==='金额');return v?'<div style="background:rgba(10,14,26,0.95);border:1px solid rgba(201,164,74,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e2e8f0"><b>'+v.name+'</b><br/><span style="font-family:JetBrains Mono;font-weight:700;color:'+G+'">'+v.value+'万/月</span></div>':'';}},grid:{left:45,right:10,top:5,bottom:30},xAxis:{type:'category',data:['用工','原材料\n消耗品','能源电费','其他物耗','月合计'],...ax,axisLabel:{fontSize:9,color:'rgba(255,255,255,0.4)'}},yAxis:{type:'value',...ax},series:[{name:'辅助',type:'bar',stack:'a',barWidth:28,itemStyle:{color:'transparent'},data:h},{name:'金额',type:'bar',stack:'a',barWidth:28,itemStyle:{borderRadius:[3,3,0,0],color:p=>p.dataIndex===4?G:C},label:{show:true,position:'top',color:'rgba(255,255,255,0.5)',fontSize:10,fontFamily:'JetBrains Mono',formatter:'{c}万'},data:m}]});})();
+
+// ====== PAGE 2 CHARTS ======
+mc('chartRevPie',{tooltip:{trigger:'item',formatter:p=>'<div style="background:rgba(10,14,26,0.95);border:1px solid rgba(201,164,74,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e2e8f0"><b>'+p.name+'</b><br/><span style="font-family:JetBrains Mono;font-weight:700;color:'+p.color+'">'+p.value+'万</span> · '+p.percent+'%</div>'},series:[{type:'pie',radius:['42%','70%'],center:['50%','53%'],itemStyle:{borderColor:'#0a0e1a',borderWidth:2,borderRadius:5},label:{color:'rgba(255,255,255,0.6)',fontSize:11,fontFamily:'Inter',formatter:'{b}\n{d}%'},data:[{value:1201.2,name:'节假日(33天)',itemStyle:{color:G}},{value:936,name:'旺季(40天)',itemStyle:{color:C}},{value:3796,name:'平季(292天)',itemStyle:{color:S}}]}]});
+
+mc('chartRevBar',{tooltip:{trigger:'axis',formatter:tip},legend:{top:0,right:0,textStyle:{color:'rgba(255,255,255,0.4)',fontSize:10}},grid:{left:55,right:40,top:30,bottom:30},xAxis:{type:'category',data:['节假日','旺季','平季'],...ax},yAxis:[{type:'value',name:'万元/日',...ax},{type:'value',name:'人/日',...ax}],series:[{name:'日均收入(万)',type:'bar',yAxisIndex:0,barWidth:32,itemStyle:{borderRadius:[3,3,0,0],color:p=>[G,C,S][p.dataIndex]},data:[36.4,23.4,13.0]},{name:'日均接待(人)',type:'line',yAxisIndex:1,symbol:'circle',symbolSize:8,lineStyle:{color:P,width:2},itemStyle:{color:P},data:[1400,900,500]}]});
+
+// ====== PAGE 3 CHARTS ======
+mc('chartProfitWaterfall',{tooltip:{trigger:'axis',formatter:tip},grid:{left:55,right:10,top:10,bottom:30},xAxis:{type:'category',data:['总收入','固定运营','变动运营','毛利润','摊销','净利润'],...ax},yAxis:{type:'value',name:'万元',...ax},series:[{name:'金额(万)',type:'bar',barWidth:32,itemStyle:{borderRadius:[3,3,0,0],color:p=>[G,'#f87171','#fb923c','#4ade80','#a78bfa',C][p.dataIndex]},label:{show:true,position:'top',color:'rgba(255,255,255,0.5)',fontSize:10,fontFamily:'JetBrains Mono',formatter:p=>Math.round(p.value).toLocaleString()},data:[5933.2,2437.8,1643.04,1852.36,585,1267.36]}]});
+
+mc('chartScenario',{tooltip:{trigger:'axis',formatter:tip},legend:{top:0,right:0,textStyle:{color:'rgba(255,255,255,0.4)',fontSize:10}},grid:{left:55,right:35,top:30,bottom:30},xAxis:{type:'category',data:['建筑6000万','6500万(基准)','建筑7000万','均价300元'],...ax},yAxis:[{type:'value',name:'净利润(万)',...ax},{type:'value',name:'回收(年)',max:10,...ax}],series:[{name:'净利润',type:'bar',barWidth:30,yAxisIndex:0,itemStyle:{borderRadius:[3,3,0,0],color:p=>[C,G,C,'#4ade80'][p.dataIndex]},label:{show:true,position:'top',color:'rgba(255,255,255,0.5)',fontSize:10,fontFamily:'JetBrains Mono',formatter:p=>Math.round(p.value)},data:[1292,1267,1242,2180]},{name:'回收周期',type:'line',yAxisIndex:1,symbol:'circle',symbolSize:8,lineStyle:{color:P,width:2},itemStyle:{color:P},data:[6.66,7.18,7.73,4.17]}]});
+
+// ====== PAGE 4 CHARTS ======
+// Price sensitivity
+(function(){const prs=[240,250,260,270,280,290,300,310,320],ppl=228200,fc=2437.8,am=585,vpp=72;
+const rs=prs.map(p=>Math.round(ppl*p/10000*10)/10);
+const ns=prs.map(p=>{const r=ppl*p/10000,vc=ppl*vpp/10000;return Math.round((r-fc-vc-am)*10)/10;});
+mc('chartPriceSens',{tooltip:{trigger:'axis',formatter:tip},legend:{top:0,right:0,textStyle:{color:'rgba(255,255,255,0.4)',fontSize:10}},grid:{left:55,right:55,top:30,bottom:30},xAxis:{type:'category',data:prs.map(p=>p+'元'),...ax},yAxis:[{type:'value',name:'总收入(万)',nameTextStyle:{color:'rgba(255,255,255,0.25)',fontSize:10},...ax},{type:'value',name:'净利润(万)',nameTextStyle:{color:'rgba(255,255,255,0.25)',fontSize:10},...ax}],series:[{name:'全年总收入',type:'line',yAxisIndex:0,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{color:G,width:2.5},itemStyle:{color:G},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:G+'25'},{offset:1,color:'transparent'}]}},data:rs},{name:'年度净利润',type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{color:C,width:2.5},itemStyle:{color:C},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:C+'25'},{offset:1,color:'transparent'}]}},data:ns}]});})();
+
+// Occ sensitivity
+(function(){const ors=[30,35,40,45,50,55,60,65,70,75,80],pr=260,vpp=72,fc=2437.8,am=585,hp=1400*33,pp=900*40;
+const rs=[],ns=[];ors.forEach(o=>{const np=500*2*(o/100)*292,tp=hp+pp+np,r=tp*pr/10000,vc=tp*vpp/10000;rs.push(Math.round(r*10)/10);ns.push(Math.round((r-fc-vc-am)*10)/10);});
+mc('chartOccSens',{tooltip:{trigger:'axis',formatter:tip},legend:{top:0,right:0,textStyle:{color:'rgba(255,255,255,0.4)',fontSize:10}},grid:{left:55,right:55,top:30,bottom:30},xAxis:{type:'category',data:ors.map(o=>o+'%'),...ax},yAxis:[{type:'value',name:'总收入(万)',nameTextStyle:{color:'rgba(255,255,255,0.25)',fontSize:10},...ax},{type:'value',name:'净利润(万)',nameTextStyle:{color:'rgba(255,255,255,0.25)',fontSize:10},...ax}],series:[{name:'全年总收入',type:'line',yAxisIndex:0,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{color:G,width:2.5},itemStyle:{color:G},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:G+'22'},{offset:1,color:'transparent'}]}},data:rs},{name:'年度净利润',type:'line',yAxisIndex:1,smooth:true,symbol:'circle',symbolSize:5,lineStyle:{color:C,width:2.5},itemStyle:{color:C},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:C+'22'},{offset:1,color:'transparent'}]}},data:ns}]});})();
+
+// Labor opt
+(function(){const bl=2269.8,bn=1267.36,cuts=[0,5,10,15,20];
+const ns=cuts.map(c=>Math.round((bn+bl*c/100)*10)/10);
+const ds=cuts.map(c=>Math.round(bl*c/100*10)/10);
+mc('chartLaborOpt',{tooltip:{trigger:'axis',formatter:tip},legend:{top:0,right:0,textStyle:{color:'rgba(255,255,255,0.4)',fontSize:10}},grid:{left:55,right:15,top:30,bottom:30},xAxis:{type:'category',data:cuts.map(c=>c+'%'),...ax},yAxis:{type:'value',name:'万元',...ax},series:[{name:'净利润',type:'bar',barWidth:30,itemStyle:{borderRadius:[3,3,0,0],color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:C},{offset:1,color:C+'44'}]}},data:ns},{name:'利润增量',type:'line',symbol:'circle',symbolSize:8,lineStyle:{color:G,width:2},itemStyle:{color:G},label:{show:true,position:'top',color:'rgba(255,255,255,0.5)',fontSize:10,fontFamily:'JetBrains Mono',formatter:p=>'+'+p.value+'万'},data:ds}]});})();
+
+// Factor rank
+(function(){const ppl=228200;
+const occD=Math.round(500*2*0.1*292*(260-72)/10000);// 549
+const prD=Math.round(ppl*26/10000);// 593
+const laD=Math.round(2269.8*0.1);// 227
+const maD=Math.round(ppl*7.2/10000);// 164
+const factors=['人均耗材降低10%','用工成本降低10%','均价提升10%','平季上座率+10%'];
+const vals=[maD,laD,prD,occD];const cs=[S,V,G,C];
+mc('chartFactorRank',{tooltip:{trigger:'axis',formatter:ps=>{const p=ps[0];return '<div style="background:rgba(10,14,26,0.95);border:1px solid rgba(201,164,74,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:#e2e8f0"><b>'+p.name+'</b><br/>净利润增量: <span style="font-family:JetBrains Mono;font-weight:700;color:'+G+'">+'+p.value+'万</span></div>';}},grid:{left:120,right:50,top:5,bottom:20},xAxis:{type:'value',name:'净利润增量(万)',...ax},yAxis:{type:'category',data:factors,...ax,axisLabel:{color:'rgba(255,255,255,0.5)',fontSize:10}},series:[{type:'bar',barWidth:22,itemStyle:{borderRadius:[0,3,3,0],color:p=>cs[p.dataIndex]},label:{show:true,position:'right',color:'rgba(255,255,255,0.6)',fontSize:11,fontFamily:'JetBrains Mono',formatter:p=>'+'+p.value+'万'},data:vals}]});})();
+
+// ====== CALCULATOR ======
+let calcChart=null;
+function calc(){
+  const price=+document.getElementById('slPrice').value;
+  const occ=+document.getElementById('slOcc').value;
+  const holPpl=+document.getElementById('slHol').value;
+  const peakOcc=+document.getElementById('slPeak').value;
+  const buildCost=+document.getElementById('slBuild').value;
+  const matCost=+document.getElementById('slMat').value;
+  const laborMonth=+document.getElementById('slLabor').value;
+  document.getElementById('valPrice').textContent=price+'元';
+  document.getElementById('valOcc').textContent=occ+'%';
+  document.getElementById('valHol').textContent=holPpl.toLocaleString()+'人';
+  document.getElementById('valPeak').textContent=peakOcc+'%';
+  document.getElementById('valBuild').textContent=buildCost.toLocaleString()+'万';
+  document.getElementById('valMat').textContent=matCost+'元';
+  document.getElementById('valLabor').textContent=parseFloat(laborMonth).toFixed(2)+'万';
+  const hP=holPpl*33,pP=500*2*(peakOcc/100)*40,nP=500*2*(occ/100)*292,tP=hP+pP+nP;
+  const tR=tP*price/10000;
+  const fL=laborMonth*12,fE=120,fO=48,fT=fL+fE+fO,vT=tP*matCost/10000,oT=fT+vT;
+  const eC=2600,tI=buildCost+eC,aB=buildCost/20,aE=eC/10,am=aB+aE;
+  const gr=tR-oT,nt=gr-am;
+  const grR=tR>0?(gr/tR*100):0,ntR=tR>0?(nt/tR*100):0;
+  const roi=tI>0?(nt/tI*100):0,pay=nt>0?(tI/nt):99;
+  const fmt=v=>Math.round(v).toLocaleString();
+  document.getElementById('resRevenue').textContent=fmt(tR);
+  document.getElementById('resCost').textContent=fmt(oT+am);
+  document.getElementById('resGross').textContent=fmt(gr);
+  document.getElementById('resGrossRate').textContent='毛利率 '+grR.toFixed(1)+'%';
+  document.getElementById('resNet').textContent=fmt(nt);
+  document.getElementById('resNetRate').textContent='净利率 '+ntR.toFixed(1)+'%';
+  document.getElementById('resROI').textContent=roi.toFixed(1)+'%';
+  document.getElementById('resPayback').textContent=pay.toFixed(2);
+  const nE=document.getElementById('resNet');nE.style.color=nt>=0?'':'#f87171';nE.className=nt>=0?'kpi-gold mono text-lg font-bold':'mono text-lg font-bold';
+  document.getElementById('resGross').style.color=gr>=0?'#4ade80':'#f87171';
+  const bR=5933.2,bN=1267.36,bP=7.18;
+  const dR=(tR-bR)/bR*100,dN=(nt-bN)/Math.abs(bN)*100,dP=pay-bP;
+  const fd=(v,s)=>(v>=0?'+':'')+v.toFixed(1)+s;
+  document.getElementById('resDiffRev').textContent=fd(dR,'%');document.getElementById('resDiffRev').style.color=dR>=0?'#4ade80':'#f87171';
+  document.getElementById('resDiffNet').textContent=fd(dN,'%');document.getElementById('resDiffNet').style.color=dN>=0?'#4ade80':'#f87171';
+  document.getElementById('resDiffPay').textContent=(dP>=0?'+':'')+dP.toFixed(2)+'年';document.getElementById('resDiffPay').style.color=dP<=0?'#4ade80':'#f87171';
+  // Mini chart
+  const el=document.getElementById('chartCalcMini');
+  if(!calcChart){calcChart=echarts.init(el,null,{renderer:'svg'});charts.push(calcChart);}
+  calcChart.setOption({tooltip:{trigger:'axis',formatter:tip},grid:{left:55,right:10,top:20,bottom:30},xAxis:{type:'category',data:['总收入','固定运营','变动运营','摊销','毛利润','净利润'],...ax},yAxis:{type:'value',name:'万元',...ax},series:[{name:'金额(万)',type:'bar',barWidth:32,itemStyle:{borderRadius:[3,3,0,0],color:p=>{const cs=[G,'#f87171','#fb923c','#a78bfa','#4ade80',nt>=0?C:'#f87171'];return{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:cs[p.dataIndex]},{offset:1,color:cs[p.dataIndex]+'44'}]};}},label:{show:true,position:'top',color:'rgba(255,255,255,0.5)',fontSize:10,fontFamily:'JetBrains Mono',formatter:p=>Math.round(p.value).toLocaleString()},data:[Math.round(tR*10)/10,Math.round(fT*10)/10,Math.round(vT*10)/10,Math.round(am*10)/10,Math.round(gr*10)/10,Math.round(nt*10)/10]}]});
+}
+calc();
+</script>
+</body>
+</html>
